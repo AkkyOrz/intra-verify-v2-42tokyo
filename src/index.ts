@@ -1,19 +1,11 @@
 const envPath = "./.env";
 
 require("dotenv").config({ path: envPath });
-const { syncBuiltinESMExports } = require("module");
-import puppeteer, { Browser, Page, ElementHandle } from "puppeteer";
-import {
-  setCredentials,
-  CredentialsTokyo42,
-  CredentialsDiscord,
-  Credentials,
-} from "./credentials";
+import puppeteer, { Page } from "puppeteer";
+import { setCredentials, CredentialsDiscord } from "./credentials";
 import clickButton from "./button";
-import assertIsDefined from "./assertIsDefined";
-import { assert } from "console";
 const { createLogger, format, transports } = require("winston");
-const { splat, combine, timestamp, label, printf, simple } = format;
+const { combine, timestamp, label, printf } = format;
 
 type InfoType = {
   level: string;
@@ -42,31 +34,9 @@ const logger = createLogger({
   ],
 });
 
-const hasAlreadyLoggedIn42 = async (page: Page) => {
-  await page.goto("https://discord.42tokyo.jp/");
-
-  const loginMainDiv = await page.$("#user_login");
-  return (loginMainDiv === null ? true : false) as boolean;
-};
-
-const login42Tokyo = async (page: Page, cred42: CredentialsTokyo42) => {
-  await page.type("#user_login", cred42.name);
-  await page.type("#user_password", cred42.password);
-
-  const submitButtonDiv = await page.$(".form-actions");
-  const submitButton = await submitButtonDiv?.$(".btn");
-  await clickButton(page, submitButton);
-  logger.info("-----------42tokyo login success------------");
-};
-
-const authorize42Tokyo = async (page: Page) => {
-  const authorizeButtonDiv = await page.$(".actions");
-  const authorizeButton = await authorizeButtonDiv?.$(".btn-success");
-  await clickButton(page, authorizeButton);
-  logger.info("-----------42tokyo OAuth success------------");
-};
-
 const hasAlreadyLoggedInDiscord = async (page: Page) => {
+  await page.goto("https://discord.com/login");
+
   const discordLoginButton = await page.$("button[type=submit]");
   return (discordLoginButton === null ? true : false) as boolean;
 };
@@ -74,29 +44,17 @@ const hasAlreadyLoggedInDiscord = async (page: Page) => {
 const loginDiscord = async (page: Page, credDiscord: CredentialsDiscord) => {
   const discordLoginForms = await page.$$("input");
   for (const [i, discordLoginForm] of discordLoginForms.entries()) {
-    assertIsDefined(discordLoginForm);
     if (i == 0) {
-      await discordLoginForm.type(credDiscord.email);
+      await discordLoginForm?.type(credDiscord.email);
     } else {
-      await discordLoginForm.type(credDiscord.password);
+      await discordLoginForm?.type(credDiscord.password);
     }
   }
   logger.info("-----------discord fill-in form------------");
 
   const discordLoginButton = await page.$("button[type=submit]");
-  await clickButton(
-    page,
-    discordLoginButton,
-    'header[id="oauth2-authorize-header-id"]'
-  );
+  await clickButton(page, discordLoginButton);
   logger.info("-----------discord login success------------");
-};
-
-const authorizeDiscord = async (page: Page) => {
-  const discordButtons = await page.$$("button");
-  const discordAuthButton = discordButtons[1];
-  await clickButton(page, discordAuthButton);
-  logger.info("-----------discord OAuth success------------");
 };
 
 const launchBrowser = async () => {
@@ -116,6 +74,33 @@ const launchBrowser = async () => {
   return await puppeteer.launch(configs);
 };
 
+const select42Tokyo42Cursus = async (page: Page) => {
+  const cursusButton = await page.$('div[aria-label="42tokyo_42cursus"');
+  await clickButton(page, cursusButton);
+  logger.info("-----------42tokyo cursus selected------------");
+};
+
+const selectIntraVerifyV2 = async (page: Page) => {
+  const channelButton = await page.$(
+    'a[aria-label="intra-verify-v2(テキストチャンネル)"]'
+  );
+  await clickButton(page, channelButton);
+  logger.info("-----------intra-verify-v2 selected------------");
+};
+
+const putReaction = async (page: Page) => {
+  await page.waitForTimeout(1000);
+  const Reactions = await page.$$('div[aria-label="リアクションを付ける"]');
+  const lastMessageReaction = Reactions[Reactions.length - 1];
+  await lastMessageReaction?.click();
+
+  await page.waitForTimeout(1000);
+  const pickerGrid = await page.$("div[id='emoji-picker-grid']");
+  const reaction = await pickerGrid?.$('button[data-name="white_check_mark');
+  await reaction?.click();
+  logger.info("-----------put reaction------------");
+};
+
 const main = async () => {
   logger.info("start");
 
@@ -124,20 +109,20 @@ const main = async () => {
   const browser = await launchBrowser();
   const page: Page = await browser.newPage();
 
-  const hasLoggedIn42 = await hasAlreadyLoggedIn42(page);
-  if (!hasLoggedIn42) {
-    await login42Tokyo(page, credentials.tokyo42);
-  } else {
-    logger.info("already logged in 42");
-  }
-  await authorize42Tokyo(page);
   const hasLoggedInDiscord = await hasAlreadyLoggedInDiscord(page);
   if (!hasLoggedInDiscord) {
     await loginDiscord(page, credentials.discord);
   } else {
     logger.info("already logged in discord");
   }
-  await authorizeDiscord(page);
+
+  await page.waitForSelector('div[aria-label="42tokyo_42cursus"]');
+  await page.waitForTimeout(1000);
+
+  await select42Tokyo42Cursus(page);
+
+  await selectIntraVerifyV2(page);
+  await putReaction(page);
 
   logger.info("finish");
   await browser.close();

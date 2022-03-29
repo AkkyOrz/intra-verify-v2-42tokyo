@@ -1,4 +1,4 @@
-# Intra-verify for 42-Tokyo
+# Intra-verify-v2 for 42-Tokyo
 
 ## 想定する利用者
 
@@ -14,7 +14,7 @@
 
 ## local で使用する場合
 
-- 最低でも、 node, yarn, chromium のインストールが必要です(現状Linuxでのみ動作確認をしています)
+- 最低でも、 node, yarn, chromium のインストールが必要です(現状 Linux でのみ動作確認をしています)
 - install の方法
   - node の install
     - [OS の package manager 経由](https://nodejs.dev/download/package-manager/)
@@ -26,11 +26,9 @@
 ### 動作を確認する
 
 ```bash
-$ git clone https://github.com/AkkyOrz/intra-verify-42tokyo.git
-$ cd intra-verify-42tokyo
+$ git clone https://github.com/AkkyOrz/intra-verify-v2-42tokyo.git
+$ cd intra-verify-v2-42tokyo
 $ cat << EOF > .env
-TOKYO_42_USERNAME="sample_user"
-TOKYO_42_PASSWORD="password"
 DISCORD_EMAIL="example@student.42.example.fr"
 DISCORD_PASSWORD="password"
 EOF
@@ -44,8 +42,6 @@ $ yarn start # headless mode
 
 1. このプロジェクトを fork する
 2. fork したリポジトリの `Settings` > `Secrets` > `Actions secrets: New repository secret` に以下のクレデンシャル情報を追加する
-   - `TOKYO_42_USERNAME`
-   - `TOKYO_42_PASSWORD`
    - `DISCORD_EMAIL`
    - `DISCORD_PASSWORD`
 3. `Actions` から手動で Github Actions を起動し、Success することを確認する -->
@@ -58,7 +54,7 @@ $ yarn start # headless mode
 ```bash
 $ crontab -e
 # 04:05(JST) (UTC 19:05) に起動する場合
-5 19 * * * /path/to/yarn --cwd /path/to/intra-verify-42tokyo start 2>> /path/to/error.log >> /path/to/result.log
+5 19 * * * /path/to/yarn --cwd /path/to/intra-verify-v2-42tokyo start 2>> /path/to/error.log >> /path/to/result.log
 ```
 
 うまく行かない場合はログファイルを確認してみると解決するかもしれません。
