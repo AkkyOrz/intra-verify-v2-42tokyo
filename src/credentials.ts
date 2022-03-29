@@ -1,5 +1,3 @@
-import assertIsDefined from "./assertIsDefined";
-
 type CredentialsTokyo42 = {
   name: string;
   password: string;
@@ -16,10 +14,14 @@ type Credentials = {
 };
 
 const setCredentials = (envVars: NodeJS.ProcessEnv) => {
-  assertIsDefined(envVars.TOKYO_42_USERNAME);
-  assertIsDefined(envVars.TOKYO_42_PASSWORD);
-  assertIsDefined(envVars.DISCORD_EMAIL);
-  assertIsDefined(envVars.DISCORD_PASSWORD);
+  if (!envVars.TOKYO_42_USERNAME)
+    throw new Error("TOKYO_42_USERNAME is not defined");
+  if (!envVars.TOKYO_42_PASSWORD)
+    throw new Error("TOKYO_42_PASSWORD is not defined");
+  if (!envVars.DISCORD_EMAIL)
+    throw new Error("DISCORD_PASSWORD is not defined");
+  if (!envVars.DISCORD_PASSWORD)
+    throw new Error("DISCORD_PASSWORD is not defined");
 
   const credentials: Credentials = {
     tokyo42: {
