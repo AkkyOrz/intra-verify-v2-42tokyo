@@ -76,7 +76,12 @@ const launchBrowser = async () => {
 
 const select42Tokyo42Cursus = async (page: Page) => {
   const cursusButton = await page.$('div[aria-label="42tokyo_42cursus"');
-  await clickButton(page, cursusButton);
+  await clickButton(
+    page,
+    cursusButton,
+    'a[aria-label="intra-verify-v2(テキストチャンネル)"]'
+  );
+  await page.waitForTimeout(1000);
   logger.info("-----------42tokyo cursus selected------------");
 };
 
@@ -120,7 +125,6 @@ const main = async () => {
   await page.waitForTimeout(1000);
 
   await select42Tokyo42Cursus(page);
-
   await selectIntraVerifyV2(page);
   await putReaction(page);
 
