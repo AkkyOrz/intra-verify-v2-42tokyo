@@ -101,9 +101,22 @@ const putReaction = async (page: Page) => {
 
   await page.waitForTimeout(1000);
   const pickerGrid = await page.$("div[id='emoji-picker-grid']");
-  const reaction = await pickerGrid?.$('button[data-name="white_check_mark');
+  const reaction = await pickerGrid?.$('button[data-name="white_check_mark]');
   await reaction?.click();
   logger.info("-----------put reaction------------");
+};
+
+const initialLogin = async (page: Page) => {
+  const mordalDiv = await page.$("div[role='dialog']");
+  return mordalDiv === null ? false : true;
+};
+
+const closeMordal = async (page: Page) => {
+  const closeButton = await page.$(
+    "button[aria-label='閉じる'][type='button']"
+  );
+  await clickButton(page, closeButton);
+  logger.info("-----------close mordal------------");
 };
 
 const main = async () => {
@@ -121,6 +134,10 @@ const main = async () => {
     logger.info("already logged in discord");
   }
 
+  const hasMordalMessaage = await initialLogin(page);
+  if (!hasMordalMessaage) {
+    await closeMordal(page);
+  }
   await page.waitForSelector('div[aria-label="42tokyo_42cursus"]');
   await page.waitForTimeout(1000);
 
